@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Chat RTDB</title>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f7f8fa;
+      margin: 0;
+    }
+
+  body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f7f8fa;
+  margin: 0;
+}
+
+/* экраны больше НЕ flex */
+.screen {
+  display: none;
+  padding-top: 40px;
+  width: 100%;
+}
+
+/* показываем активный экран */
+.active {
+  display: block;
+}
+
+/* карточка просто по центру горизонтально */
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  width: 360px;
+  margin: 0 auto; /* 👈 центр по горизонтали */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 10px;
+    }
+
+    #messages {
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen active">
+  <div class="card">
+    <h2>Вход</h2>
+
+    <input id="login" placeholder="Логин">
+    <input id="pass" type="password" placeholder="Пароль">
+
+    <button onclick="login()">Войти</button>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div id="chatScreen" class="screen">
+  <div class="card">
+    <h2 id="title">Чат</h2>
+
+    <div id="messages"></div>
+
+    <input id="msgInput" placeholder="Сообщение">
+    <button onclick="sendMessage()">Отправить</button>
+
+    <button onclick="logout()" style="background:#999;">Выйти</button>
+  </div>
+</div>
+
+<script>
+
+/* USERS */
+const users = {
+  serge: { password: "1111", name: "Серж" },
+  masha: { password: "2222", name: "Маша" },
+  boris: { password: "3333", name: "Боря" }
+};
+
+let currentUser = null;
+
+/* FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyDjqI-fCpmUAc4S-kBDgYBCq-ezCzmsabU",
+  authDomain: "chat-8bb2b.firebaseapp.com",
+  databaseURL: "https://chat-8bb2b-default-rtdb.firebaseio.com/",
+  projectId: "chat-8bb2b",
+  storageBucket: "chat-8bb2b.appspot.com",
+  messagingSenderId: "248692438123",
+  appId: "1:248692438123:web:acf2acf528f4a2e3186d2e"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+/* 🔥 REALTIME DATABASE */
+const db = firebase.database();
+
+/* LOGIN */
+function login() {
+  const login = document.getElementById("login").value;
+  const pass = document.getElementById("pass").value;
+
+  if (users[login] && users[login].password === pass) {
+    currentUser = users[login].name;
+
+    document.getElementById("loginScreen").classList.remove("active");
+    document.getElementById("chatScreen").classList.add("active");
+
+    document.getElementById("title").innerText = `Чат — ${currentUser}`;
+
+    listenMessages();
+  }
+}
+
+/* LOGOUT */
+function logout() {
+  location.reload();
+}
+
+/* SEND */
+function sendMessage() {
+  const text = document.getElementById("msgInput").value;
+  if (!text.trim()) return;
+
+  db.ref("messages").push({
+    text: text,
+    user: currentUser,
+    time: Date.now()
+  });
+
+  document.getElementById("msgInput").value = "";
+}
+
+/* LISTEN */
+function listenMessages() {
+  db.ref("messages").on("value", snapshot => {
+
+    const messagesDiv = document.getElementById("messages");
+    messagesDiv.innerHTML = "";
+
+    snapshot.forEach(child => {
+      const msg = child.val();
+
+      messagesDiv.innerHTML += `
+        <div><b>${msg.user}:</b> ${msg.text}</div>
+      `;
+    });
+
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+}
+
+</script>
+
+</body>
+</html>
