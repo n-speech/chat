@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -171,12 +172,6 @@
 </div>
 
 <script>
-const users = {
-  serge: { password: "1111", name: "Серж" },
-  masha: { password: "2222", name: "Маша" },
-  boris: { password: "3333", name: "Боря" }
-};
-
 let currentUser = null;
 let pendingFile = null;
 
@@ -190,37 +185,64 @@ const firebaseConfig = {
   appId: "1:248692438123:web:acf2acf528f4a2e3186d2e"
 };
 
+/* INIT FIREBASE (правильно) */
 firebase.initializeApp(firebaseConfig);
-const app = firebase.initializeApp(firebaseConfig);
-const storage = firebase.storage(app);
-const db = firebase.database(app);
 
+const auth = firebase.auth();
+const db = firebase.database();
+const storage = firebase.storage();
 
+/* =========================
+   AUTH
+========================= */
 
-/* AUTH */
 function login() {
-  const loginVal = document.getElementById("loginInput").value.trim();
-  const pass = document.getElementById("passInput").value;
-  const errorMsg = document.getElementById("errorMsg");
+  const email = document.getElementById("loginInput").value;
+  const password = document.getElementById("passInput").value;
 
-  if (users[loginVal] && users[loginVal].password === pass) {
-    currentUser = users[loginVal].name;
-    errorMsg.textContent = "";
-    document.getElementById("loginScreen").classList.remove("active");
-    document.getElementById("chatScreen").classList.add("active");
-    document.getElementById("avatarEl").textContent = currentUser.slice(0,2).toUpperCase();
-    document.getElementById("headerName").textContent = currentUser;
-    listenMessages();
-    document.getElementById("msgInput").focus();
-  } else {
-    errorMsg.textContent = "Неверный логин или пароль";
-    document.getElementById("passInput").value = "";
-  }
+  auth.signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      currentUser = userCredential.user;
+      enterChat();
+    })
+    .catch(err => {
+      document.getElementById("errorMsg").textContent = err.message;
+    });
 }
 
-function logout() { location.reload(); }
+function register() {
+  const email = document.getElementById("loginInput").value;
+  const password = document.getElementById("passInput").value;
 
-/* FILE SELECTION */
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      currentUser = userCredential.user;
+      enterChat();
+    })
+    .catch(err => {
+      document.getElementById("errorMsg").textContent = err.message;
+    });
+}
+
+function enterChat() {
+  document.getElementById("loginScreen").classList.remove("active");
+  document.getElementById("chatScreen").classList.add("active");
+
+  document.getElementById("headerName").textContent = currentUser.email;
+  document.getElementById("avatarEl").textContent =
+    currentUser.email.slice(0, 2).toUpperCase();
+
+  listenMessages();
+}
+
+function logout() {
+  auth.signOut().then(() => location.reload());
+}
+
+/* =========================
+   FILES
+========================= */
+
 const MAX_SIZE = 50 * 1024 * 1024;
 
 function onFileSelected(e) {
@@ -229,11 +251,11 @@ function onFileSelected(e) {
 
   if (file.size > MAX_SIZE) {
     alert("Файл слишком большой. Максимум 50 МБ.");
-    e.target.value = "";
     return;
   }
 
   pendingFile = file;
+
   const previewThumb = document.getElementById("previewThumb");
   document.getElementById("previewName").textContent = file.name;
 
@@ -251,27 +273,45 @@ function onFileSelected(e) {
 function cancelFile() {
   pendingFile = null;
   document.getElementById("previewBar").classList.remove("visible");
-  document.getElementById("previewThumb").src = "";
 }
 
-/* SEND */
+/* =========================
+   SEND MESSAGE
+========================= */
+
 function sendMessage() {
   const text = document.getElementById("msgInput").value.trim();
+
+  if (!currentUser) return;
 
   if (pendingFile) {
     uploadAndSend(pendingFile, text);
     cancelFile();
     document.getElementById("msgInput").value = "";
-  } else if (text) {
-    db.ref("messages").push({ type: "text", text, user: currentUser, time: Date.now() });
+    return;
+  }
+
+  if (text) {
+    db.ref("messages").push({
+      type: "text",
+      text,
+      user: currentUser.email,
+      time: Date.now()
+    });
+
     document.getElementById("msgInput").value = "";
   }
 }
+
+/* =========================
+   UPLOAD
+========================= */
 
 function uploadAndSend(file, caption) {
   const isVideo = file.type.startsWith("video/");
   const ext = file.name.split('.').pop();
   const path = `chat_media/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
   const task = storage.ref(path).put(file);
 
   const progressWrap = document.getElementById("progressWrap");
@@ -288,29 +328,33 @@ function uploadAndSend(file, caption) {
     },
     err => {
       progressWrap.classList.remove("visible");
-      progressFill.style.width = "0%";
-      alert("Ошибка загрузки: " + err.message);
+      alert(err.message);
     },
     async () => {
       progressWrap.classList.remove("visible");
-      progressFill.style.width = "0%";
+
       const url = await storage.ref(path).getDownloadURL();
+
       db.ref("messages").push({
         type: isVideo ? "video" : "image",
         url,
         caption: caption || "",
-        user: currentUser,
+        user: currentUser.email,
         time: Date.now()
       });
     }
   );
 }
 
-/* LISTEN */
+/* =========================
+   LISTEN MESSAGES
+========================= */
+
 function listenMessages() {
   db.ref("messages").on("value", snapshot => {
     const container = document.getElementById("messages");
     container.innerHTML = "";
+
     let lastDate = null;
 
     snapshot.forEach(child => {
@@ -325,7 +369,8 @@ function listenMessages() {
         lastDate = dateStr;
       }
 
-      const isMine = msg.user === currentUser;
+      const isMine = msg.user === currentUser.email;
+
       const row = document.createElement("div");
       row.className = "msg-row " + (isMine ? "mine" : "theirs");
 
@@ -340,33 +385,22 @@ function listenMessages() {
 
       if (msg.type === "image") {
         bubble.className = "msg-bubble media-bubble";
+
         const img = document.createElement("img");
         img.src = msg.url;
-        img.loading = "lazy";
         img.onclick = () => openLightbox(msg.url);
+
         bubble.appendChild(img);
-        if (msg.caption) {
-          const cap = document.createElement("p");
-          cap.className = "media-caption";
-          cap.style.color = isMine ? "white" : "var(--text)";
-          cap.textContent = msg.caption;
-          bubble.appendChild(cap);
-        }
+
       } else if (msg.type === "video") {
         bubble.className = "msg-bubble media-bubble";
+
         const vid = document.createElement("video");
         vid.src = msg.url;
         vid.controls = true;
-        vid.playsInline = true;
-        vid.preload = "metadata";
+
         bubble.appendChild(vid);
-        if (msg.caption) {
-          const cap = document.createElement("p");
-          cap.className = "media-caption";
-          cap.style.color = isMine ? "white" : "var(--text)";
-          cap.textContent = msg.caption;
-          bubble.appendChild(cap);
-        }
+
       } else {
         bubble.className = "msg-bubble";
         bubble.textContent = msg.text || "";
@@ -386,34 +420,52 @@ function listenMessages() {
   });
 }
 
-/* LIGHTBOX */
+/* =========================
+   LIGHTBOX
+========================= */
+
 function openLightbox(url) {
   document.getElementById("lightboxImg").src = url;
   document.getElementById("lightbox").classList.add("open");
 }
+
 function closeLightbox() {
   document.getElementById("lightbox").classList.remove("open");
 }
 
-/* UTILS */
+/* =========================
+   UTILS
+========================= */
+
 function formatTime(ts) {
   const d = new Date(ts);
-  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  return d.getHours().toString().padStart(2,'0') + ':' +
+         d.getMinutes().toString().padStart(2,'0');
 }
+
 function formatDate(ts) {
   const d = new Date(ts);
   const now = new Date();
+
   if (d.toDateString() === now.toDateString()) return "Сегодня";
-  const y = new Date(now); y.setDate(now.getDate()-1);
+
+  const y = new Date(now);
+  y.setDate(now.getDate() - 1);
+
   if (d.toDateString() === y.toDateString()) return "Вчера";
-  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+
+  return d.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long'
+  });
 }
 
+/* ENTER SEND */
 document.getElementById("msgInput").addEventListener("keydown", e => {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-});
-document.getElementById("passInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") login();
+  if (e.key === "Enter") {
+    e.preventDefault();
+    sendMessage();
+  }
 });
 </script>
 </body>
