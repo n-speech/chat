@@ -405,6 +405,14 @@ const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
 
+/* PERSIST SESSION */
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    enterChat();
+  }
+});
+
 /* AUTH */
 function login() {
   const email = document.getElementById("loginInput").value.trim();
