@@ -38,6 +38,16 @@
     .screen { display: none; height: 100dvh; width: 100%; }
     .screen.active { display: flex; flex-direction: column; }
 
+    /* SPLASH */
+    #splashScreen {
+      position: fixed; inset: 0;
+      background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+      transition: opacity 0.2s;
+    }
+    #splashScreen.hidden { opacity: 0; pointer-events: none; }
+
     /* LOGIN */
     #loginScreen { justify-content: center; align-items: center; padding: 24px 16px; }
 
@@ -325,8 +335,15 @@
 </head>
 <body>
 
+<!-- SPLASH (скрывает мигание при загрузке) -->
+<div id="splashScreen">
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+  </svg>
+</div>
+
 <!-- LOGIN -->
-<div id="loginScreen" class="screen active">
+<div id="loginScreen" class="screen">
   <div class="login-card">
     <h2>Добро пожаловать</h2>
     <p>Введите email и пароль</p>
@@ -410,7 +427,13 @@ auth.onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     enterChat();
+  } else {
+    document.getElementById("loginScreen").classList.add("active");
   }
+  // скрываем сплэш в любом случае
+  const splash = document.getElementById("splashScreen");
+  splash.classList.add("hidden");
+  setTimeout(() => splash.remove(), 200);
 });
 
 /* AUTH */
