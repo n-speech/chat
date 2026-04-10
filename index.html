@@ -2,74 +2,80 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Firebase Chat RTDB</title>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f7f8fa;
-      margin: 0;
-    }
-
-  body {
+   body {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background: #f7f8fa;
   margin: 0;
 }
 
-/* экраны больше НЕ flex */
+/* экраны */
 .screen {
   display: none;
-  padding-top: 40px;
+  padding: 20px 10px;
   width: 100%;
+  box-sizing: border-box;
 }
 
-/* показываем активный экран */
 .active {
   display: block;
 }
 
-/* карточка просто по центру горизонтально */
+/* карточка — теперь адаптивная */
 .card {
   background: white;
-  padding: 20px;
+  padding: 18px;
   border-radius: 16px;
-  width: 360px;
-  margin: 0 auto; /* 👈 центр по горизонтали */
+
+  width: 100%;
+  max-width: 420px;   /* 👈 ограничение на больших экранах */
+  margin: 20px auto;
+
   box-shadow: 0 8px 20px rgba(0,0,0,0.05);
   text-align: center;
 }
 
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-    }
+/* инпуты — крупнее для телефона */
+input {
+  width: 100%;
+  padding: 14px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 16px; /* важно для iPhone (не зумит) */
+  box-sizing: border-box;
+}
 
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      background: #4a90e2;
-      color: white;
-      border: none;
-      border-radius: 10px;
-    }
+/* кнопки */
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+}
 
-    #messages {
-      height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-      margin-bottom: 10px;
-    }
-  </style>
+/* чат окно */
+#messages {
+  height: 50vh; /* 👈 вместо фикс 200px */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: 15px;
+}
 </head>
 
 <body>
