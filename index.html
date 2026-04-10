@@ -11,296 +11,316 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
   <style>
-   *, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --blue: #4a90e2;
-  --blue-dark: #3a7bd5;
-  --gray: #f0f2f5;
-  --border: #e4e6ea;
-  --text: #1c1e21;
-  --muted: #65676b;
-  --white: #ffffff;
-  --bubble-me: #0084ff;
-  --bubble-other: #e4e6ea;
-}
+    :root {
+      --blue: #4a90e2;
+      --blue-dark: #3a7bd5;
+      --gray: #f0f2f5;
+      --border: #e4e6ea;
+      --text: #1c1e21;
+      --muted: #65676b;
+      --white: #ffffff;
+      --bubble-me: #0084ff;
+      --bubble-other: #e4e6ea;
+    }
 
-html, body {
-  height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--gray);
-  color: var(--text);
-  font-size: 16px;
-  overflow-x: hidden;
-}
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--gray);
+      color: var(--text);
+      font-size: 16px;
+      overflow-x: hidden;
+    }
 
-/* =========================
-   SCREEN
-========================= */
+    /* SCREENS */
+    .screen { display: none; height: 100dvh; width: 100%; }
+    .screen.active { display: flex; flex-direction: column; }
 
-.screen {
-  display: none;
-  height: 100dvh;
-  width: 100%;
-}
+    /* LOGIN */
+    #loginScreen { justify-content: center; align-items: center; padding: 24px 16px; }
 
-.screen.active {
-  display: flex;
-  flex-direction: column;
-}
+    .login-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
 
-/* =========================
-   LOGIN
-========================= */
+    .login-card h2 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+    .login-card p { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
 
-#loginScreen {
-  justify-content: center;
-  align-items: center;
-  padding: 24px 16px;
-}
+    .login-card input {
+      display: block;
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 16px;
+      background: var(--gray);
+      color: var(--text);
+      outline: none;
+      -webkit-appearance: none;
+      transition: border-color 0.2s;
+    }
+    .login-card input:focus { border-color: var(--blue); background: var(--white); }
 
-.login-card {
-  background: var(--white);
-  border-radius: 20px;
-  padding: 32px 24px;
-  width: 100%;
-  max-width: 380px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-}
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s, transform 0.1s;
+      margin-bottom: 10px;
+    }
+    .btn-primary:active { background: var(--blue-dark); transform: scale(0.98); }
 
-.login-card h2 {
-  font-size: 24px;
-  margin-bottom: 6px;
-}
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      color: var(--blue);
+      border: 1.5px solid var(--blue);
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s;
+    }
+    .btn-secondary:active { background: #eef4fd; }
 
-.login-card p {
-  font-size: 14px;
-  color: var(--muted);
-  margin-bottom: 24px;
-}
+    .error-msg { color: #e53935; font-size: 13px; margin-top: 12px; text-align: center; min-height: 18px; }
 
-.login-card input {
-  width: 100%;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  font-size: 16px;
-  background: var(--gray);
-  outline: none;
-}
+    /* CHAT HEADER */
+    .chat-header {
+      background: var(--white);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      min-height: 56px;
+    }
 
-.login-card input:focus {
-  border-color: var(--blue);
-  background: var(--white);
-}
+    .header-info { display: flex; align-items: center; gap: 10px; }
 
-.btn-primary {
-  width: 100%;
-  padding: 15px;
-  background: var(--blue);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-}
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
 
-/* =========================
-   CHAT HEADER
-========================= */
+    .header-name { font-size: 15px; font-weight: 600; color: var(--text); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .header-sub { font-size: 12px; color: #31a24c; margin-top: 1px; }
 
-.chat-header {
-  background: var(--white);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  min-height: 56px;
-}
+    .btn-logout {
+      padding: 8px 14px;
+      background: var(--gray);
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      color: var(--muted);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .btn-logout:active { opacity: 0.7; }
 
-.header-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+    /* MESSAGES */
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
 
-.avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--blue);
-  color: white;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    .msg-row { display: flex; flex-direction: column; max-width: 78%; }
+    .msg-row.mine { align-self: flex-end; align-items: flex-end; }
+    .msg-row.theirs { align-self: flex-start; align-items: flex-start; }
 
-.header-name {
-  font-size: 16px;
-  font-weight: 600;
-}
+    .msg-sender { font-size: 11px; color: var(--muted); margin-bottom: 3px; padding: 0 6px; }
 
-.header-sub {
-  font-size: 12px;
-  color: #31a24c;
-}
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .mine .msg-bubble { background: var(--bubble-me); color: white; border-bottom-right-radius: 5px; }
+    .theirs .msg-bubble { background: var(--bubble-other); color: var(--text); border-bottom-left-radius: 5px; }
 
-.btn-logout {
-  padding: 8px 14px;
-  background: var(--gray);
-  border: none;
-  border-radius: 20px;
-  color: var(--muted);
-}
+    /* media bubbles */
+    .msg-bubble.media-bubble { padding: 4px; }
+    .msg-bubble.media-bubble img {
+      display: block;
+      max-width: 240px;
+      max-height: 300px;
+      border-radius: 14px;
+      cursor: pointer;
+      object-fit: cover;
+    }
+    .msg-bubble.media-bubble video {
+      display: block;
+      max-width: 240px;
+      max-height: 300px;
+      border-radius: 14px;
+    }
+    .media-caption { padding: 6px 10px 4px; font-size: 14px; }
 
-/* =========================
-   MESSAGES
-========================= */
+    .msg-time { font-size: 10px; color: var(--muted); margin-top: 3px; padding: 0 6px; }
 
-#messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  -webkit-overflow-scrolling: touch;
-}
+    /* date divider */
+    .date-divider {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 8px 0;
+      position: relative;
+    }
+    .date-divider::before, .date-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 30%;
+      height: 1px;
+      background: var(--border);
+    }
+    .date-divider::before { left: 0; }
+    .date-divider::after { right: 0; }
 
-.msg-row {
-  display: flex;
-  flex-direction: column;
-  max-width: 78%;
-}
+    /* PREVIEW BAR */
+    .preview-bar {
+      display: none;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 8px 16px;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .preview-bar.visible { display: flex; }
+    .preview-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; }
+    .preview-name { flex: 1; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .preview-cancel { background: none; border: none; font-size: 20px; color: var(--muted); cursor: pointer; padding: 0 4px; line-height: 1; }
 
-.msg-row.mine {
-  align-self: flex-end;
-  align-items: flex-end;
-}
+    /* PROGRESS BAR */
+    .progress-bar-wrap {
+      display: none;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 8px 16px;
+      flex-shrink: 0;
+    }
+    .progress-bar-wrap.visible { display: block; }
+    .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    .progress-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--blue); border-radius: 4px; width: 0%; transition: width 0.15s; }
 
-.msg-row.theirs {
-  align-self: flex-start;
-  align-items: flex-start;
-}
+    /* INPUT BAR */
+    .input-bar {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 10px 12px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
 
-.msg-sender {
-  font-size: 11px;
-  color: var(--muted);
-  margin-bottom: 3px;
-  padding: 0 6px;
-}
+    .input-bar input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      font-size: 15px;
+      background: var(--gray);
+      color: var(--text);
+      outline: none;
+      -webkit-appearance: none;
+      transition: border-color 0.2s;
+    }
+    .input-bar input[type="text"]:focus { border-color: var(--blue); background: var(--white); }
 
-.msg-bubble {
-  padding: 10px 14px;
-  border-radius: 18px;
-  font-size: 16px;
-  line-height: 1.4;
-  word-break: break-word;
-}
+    #fileInput { display: none; }
 
-.mine .msg-bubble {
-  background: var(--bubble-me);
-  color: white;
-  border-bottom-right-radius: 5px;
-}
+    .btn-attach {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--gray);
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-attach:active { background: var(--border); }
 
-.theirs .msg-bubble {
-  background: var(--bubble-other);
-  color: var(--text);
-  border-bottom-left-radius: 5px;
-}
+    .btn-send {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-send:active { background: var(--blue-dark); transform: scale(0.93); }
+    .btn-send svg { width: 18px; height: 18px; fill: white; }
 
-.msg-time {
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 3px;
-  padding: 0 6px;
-}
-
-/* =========================
-   INPUT BAR (FIXED)
-========================= */
-
-.input-bar {
-  background: var(--white);
-  border-top: 1px solid var(--border);
-  padding: 10px 12px;
-  padding-bottom: max(10px, env(safe-area-inset-bottom));
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.input-bar input[type="text"] {
-  flex: 1;
-  min-width: 0;
-  padding: 11px 16px;
-  border: 1.5px solid var(--border);
-  border-radius: 22px;
-  font-size: 16px;
-  background: var(--gray);
-  outline: none;
-}
-
-.input-bar input[type="text"]:focus {
-  border-color: var(--blue);
-  background: var(--white);
-}
-
-/* buttons */
-.btn-attach,
-.btn-send {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-attach {
-  background: var(--gray);
-}
-
-.btn-send {
-  background: var(--blue);
-  color: white;
-}
-
-/* =========================
-   MEDIA FIX
-========================= */
-
-.msg-bubble.media-bubble img,
-.msg-bubble.media-bubble video {
-  max-width: 240px;
-  border-radius: 14px;
-  display: block;
-}
-
-/* =========================
-   MOBILE FIX
-========================= */
-
-@media (max-width: 600px) {
-  .msg-bubble {
-    font-size: 15px;
-  }
-
-  .header-name {
-    font-size: 18px;
-  }
-}
+    /* LIGHTBOX */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 95vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+    .lightbox-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      font-size: 22px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -309,10 +329,11 @@ html, body {
 <div id="loginScreen" class="screen active">
   <div class="login-card">
     <h2>Добро пожаловать</h2>
-    <p>Войдите, чтобы начать общение</p>
-    <input id="loginInput" placeholder="Логин" autocomplete="username" autocorrect="off" autocapitalize="none">
+    <p>Введите email и пароль</p>
+    <input id="loginInput" placeholder="Email" type="email" autocomplete="username" autocorrect="off" autocapitalize="none">
     <input id="passInput" type="password" placeholder="Пароль" autocomplete="current-password">
     <button class="btn-primary" onclick="login()">Войти</button>
+    <button class="btn-secondary" onclick="register()">Зарегистрироваться</button>
     <div class="error-msg" id="errorMsg"></div>
   </div>
 </div>
@@ -345,7 +366,7 @@ html, body {
   </div>
 
   <div class="input-bar">
-    <button class="btn-attach" onclick="document.getElementById('fileInput').click()" title="Прикрепить файл">
+    <button class="btn-attach" onclick="document.getElementById('fileInput').click()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.41 17.41a2 2 0 01-2.83-2.83l8.49-8.48"/>
       </svg>
@@ -379,64 +400,58 @@ const firebaseConfig = {
   appId: "1:248692438123:web:acf2acf528f4a2e3186d2e"
 };
 
-/* INIT FIREBASE (правильно) */
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
 
-/* =========================
-   AUTH
-========================= */
-
+/* AUTH */
 function login() {
-  const email = document.getElementById("loginInput").value;
+  const email = document.getElementById("loginInput").value.trim();
   const password = document.getElementById("passInput").value;
+  const errorMsg = document.getElementById("errorMsg");
 
   auth.signInWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      currentUser = userCredential.user;
-      enterChat();
-    })
-    .catch(err => {
-      document.getElementById("errorMsg").textContent = err.message;
-    });
+    .then(cred => { currentUser = cred.user; enterChat(); })
+    .catch(err => { errorMsg.textContent = friendlyError(err.code); });
 }
 
 function register() {
-  const email = document.getElementById("loginInput").value;
+  const email = document.getElementById("loginInput").value.trim();
   const password = document.getElementById("passInput").value;
+  const errorMsg = document.getElementById("errorMsg");
 
   auth.createUserWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      currentUser = userCredential.user;
-      enterChat();
-    })
-    .catch(err => {
-      document.getElementById("errorMsg").textContent = err.message;
-    });
+    .then(cred => { currentUser = cred.user; enterChat(); })
+    .catch(err => { errorMsg.textContent = friendlyError(err.code); });
+}
+
+function friendlyError(code) {
+  const map = {
+    "auth/invalid-email": "Неверный формат email",
+    "auth/user-not-found": "Пользователь не найден",
+    "auth/wrong-password": "Неверный пароль",
+    "auth/email-already-in-use": "Email уже используется",
+    "auth/weak-password": "Пароль должен быть не менее 6 символов",
+    "auth/invalid-credential": "Неверный email или пароль",
+  };
+  return map[code] || "Ошибка входа. Попробуйте ещё раз.";
 }
 
 function enterChat() {
   document.getElementById("loginScreen").classList.remove("active");
   document.getElementById("chatScreen").classList.add("active");
-
   document.getElementById("headerName").textContent = currentUser.email;
-  document.getElementById("avatarEl").textContent =
-    currentUser.email.slice(0, 2).toUpperCase();
-
+  document.getElementById("avatarEl").textContent = currentUser.email.slice(0,2).toUpperCase();
   listenMessages();
+  document.getElementById("msgInput").focus();
 }
 
 function logout() {
   auth.signOut().then(() => location.reload());
 }
 
-/* =========================
-   FILES
-========================= */
-
+/* FILE SELECTION */
 const MAX_SIZE = 50 * 1024 * 1024;
 
 function onFileSelected(e) {
@@ -445,11 +460,11 @@ function onFileSelected(e) {
 
   if (file.size > MAX_SIZE) {
     alert("Файл слишком большой. Максимум 50 МБ.");
+    e.target.value = "";
     return;
   }
 
   pendingFile = file;
-
   const previewThumb = document.getElementById("previewThumb");
   document.getElementById("previewName").textContent = file.name;
 
@@ -467,45 +482,29 @@ function onFileSelected(e) {
 function cancelFile() {
   pendingFile = null;
   document.getElementById("previewBar").classList.remove("visible");
+  document.getElementById("previewThumb").src = "";
 }
 
-/* =========================
-   SEND MESSAGE
-========================= */
-
+/* SEND */
 function sendMessage() {
-  const text = document.getElementById("msgInput").value.trim();
-
   if (!currentUser) return;
+  const text = document.getElementById("msgInput").value.trim();
 
   if (pendingFile) {
     uploadAndSend(pendingFile, text);
     cancelFile();
     document.getElementById("msgInput").value = "";
-    return;
-  }
-
-  if (text) {
-    db.ref("messages").push({
-      type: "text",
-      text,
-      user: currentUser.email,
-      time: Date.now()
-    });
-
+  } else if (text) {
+    db.ref("messages").push({ type: "text", text, user: currentUser.email, time: Date.now() });
     document.getElementById("msgInput").value = "";
   }
 }
 
-/* =========================
-   UPLOAD
-========================= */
-
+/* UPLOAD */
 function uploadAndSend(file, caption) {
   const isVideo = file.type.startsWith("video/");
   const ext = file.name.split('.').pop();
   const path = `chat_media/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-
   const task = storage.ref(path).put(file);
 
   const progressWrap = document.getElementById("progressWrap");
@@ -522,13 +521,13 @@ function uploadAndSend(file, caption) {
     },
     err => {
       progressWrap.classList.remove("visible");
-      alert(err.message);
+      progressFill.style.width = "0%";
+      alert("Ошибка загрузки: " + err.message);
     },
     async () => {
       progressWrap.classList.remove("visible");
-
+      progressFill.style.width = "0%";
       const url = await storage.ref(path).getDownloadURL();
-
       db.ref("messages").push({
         type: isVideo ? "video" : "image",
         url,
@@ -540,15 +539,11 @@ function uploadAndSend(file, caption) {
   );
 }
 
-/* =========================
-   LISTEN MESSAGES
-========================= */
-
+/* LISTEN */
 function listenMessages() {
   db.ref("messages").on("value", snapshot => {
     const container = document.getElementById("messages");
     container.innerHTML = "";
-
     let lastDate = null;
 
     snapshot.forEach(child => {
@@ -564,7 +559,6 @@ function listenMessages() {
       }
 
       const isMine = msg.user === currentUser.email;
-
       const row = document.createElement("div");
       row.className = "msg-row " + (isMine ? "mine" : "theirs");
 
@@ -579,22 +573,33 @@ function listenMessages() {
 
       if (msg.type === "image") {
         bubble.className = "msg-bubble media-bubble";
-
         const img = document.createElement("img");
         img.src = msg.url;
+        img.loading = "lazy";
         img.onclick = () => openLightbox(msg.url);
-
         bubble.appendChild(img);
-
+        if (msg.caption) {
+          const cap = document.createElement("p");
+          cap.className = "media-caption";
+          cap.style.color = isMine ? "white" : "var(--text)";
+          cap.textContent = msg.caption;
+          bubble.appendChild(cap);
+        }
       } else if (msg.type === "video") {
         bubble.className = "msg-bubble media-bubble";
-
         const vid = document.createElement("video");
         vid.src = msg.url;
         vid.controls = true;
-
+        vid.playsInline = true;
+        vid.preload = "metadata";
         bubble.appendChild(vid);
-
+        if (msg.caption) {
+          const cap = document.createElement("p");
+          cap.className = "media-caption";
+          cap.style.color = isMine ? "white" : "var(--text)";
+          cap.textContent = msg.caption;
+          bubble.appendChild(cap);
+        }
       } else {
         bubble.className = "msg-bubble";
         bubble.textContent = msg.text || "";
@@ -614,52 +619,34 @@ function listenMessages() {
   });
 }
 
-/* =========================
-   LIGHTBOX
-========================= */
-
+/* LIGHTBOX */
 function openLightbox(url) {
   document.getElementById("lightboxImg").src = url;
   document.getElementById("lightbox").classList.add("open");
 }
-
 function closeLightbox() {
   document.getElementById("lightbox").classList.remove("open");
 }
 
-/* =========================
-   UTILS
-========================= */
-
+/* UTILS */
 function formatTime(ts) {
   const d = new Date(ts);
-  return d.getHours().toString().padStart(2,'0') + ':' +
-         d.getMinutes().toString().padStart(2,'0');
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
 }
-
 function formatDate(ts) {
   const d = new Date(ts);
   const now = new Date();
-
   if (d.toDateString() === now.toDateString()) return "Сегодня";
-
-  const y = new Date(now);
-  y.setDate(now.getDate() - 1);
-
+  const y = new Date(now); y.setDate(now.getDate()-1);
   if (d.toDateString() === y.toDateString()) return "Вчера";
-
-  return d.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long'
-  });
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
 }
 
-/* ENTER SEND */
 document.getElementById("msgInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    sendMessage();
-  }
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+document.getElementById("passInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") login();
 });
 </script>
 </body>
