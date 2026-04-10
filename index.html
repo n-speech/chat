@@ -191,8 +191,11 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const storage = firebase.storage();
+const app = firebase.initializeApp(firebaseConfig);
+const storage = firebase.storage(app);
+const db = firebase.database(app);
+
+
 
 /* AUTH */
 function login() {
