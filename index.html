@@ -450,15 +450,6 @@ async function enableNotifications() {
   }
 }
 
-// Уведомление когда вкладка открыта но не активна
-messaging.onMessage(payload => {
-  if (document.hidden) {
-    new Notification(payload.notification.title, {
-      body: payload.notification.body
-    });
-  }
-});
-
 /* PERSIST SESSION */
 auth.onAuthStateChanged(user => {
   if (user) {
